@@ -25,7 +25,7 @@ class Utilisateur:
         self.mot_de_passe = mot_de_passe
         self.age = int(age)
         self.pays = pays
-        self.abonnement = int(abonnement)
+        self.abonnement = abonnement
 
 
 class AnnuaireUtilisateur:
