@@ -1,0 +1,2 @@
+class AbonnementValidationExecption(Exception):
+    pass

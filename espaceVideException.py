@@ -1,0 +1,2 @@
+class EspaceVideException(Exception):
+    pass
