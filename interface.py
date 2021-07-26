@@ -1,10 +1,15 @@
-from tkinter import Button, Entry, E, Label, Tk, Frame, messagebox, StringVar
+from tkinter import Button, Entry, E, Label, Tk, ttk, Frame, messagebox, StringVar, PhotoImage
 from tkinter.ttk import Combobox
 from utilisateur import AnnuaireUtilisateur
 from erreurValidationException import ErreurValidationException
 from espaceVideException import EspaceVideException
+from erreurValidationNombreException import ErreurValidationNombreException
 from abonnementValidationException import AbonnementValidationExecption
 from datetime import date
+from mediatheque import Mediatheque
+from PIL import Image, ImageTk
+
+
 
 class fenetreprincipal(Tk):
     def __init__(self):
@@ -72,11 +77,12 @@ class fenetre_connexion(Tk):
     def gerer_connexion_utilisateur(self):
         annuaireUtilisateur = AnnuaireUtilisateur("ulflix-utilisateurs.txt")
         try:
-            utilsateur = annuaireUtilisateur.authentifier(self.entry_email.get(), self.entry_mot_de_passe.get())
+            utilisateur = annuaireUtilisateur.authentifier(self.entry_email.get(), self.entry_mot_de_passe.get())
+
         except ErreurValidationException as e:
             messagebox.showerror("Erreur de validation", e, parent=self)
         else:
-            tableau_de_bord()
+            tableau_de_bord(utilisateur)
 
 
 class fenetre_inscription(Tk):
@@ -187,24 +193,52 @@ class fenetre_inscription(Tk):
                                                        self.combobox_pays.get(),
                                                        self.combobox_abonnement.get(),
                                                        self.entry_mot_de_passe_inscription.get())
+        except ErreurValidationException as e:
+            messagebox.showerror("Erreur de validation", e, parent=self)
         except AbonnementValidationExecption as e:
             messagebox.showerror("Erreur de validation", e, parent=self)
         except EspaceVideException as e:
             messagebox.showerror("Erreur de validation", e, parent=self)
-
+        except ErreurValidationNombreException as e:
+            messagebox.showerror("Erreur de validation", e, parent=self)
         else:
-            messagebox.showinfo("Bienvenue " +utilisateur.nom, "Informative message")
-
-
+            messagebox.showinfo("Bienvenue " + utilisateur.nom, "Informative message")
 
 class tableau_de_bord(Tk):
-    def __init__(self):
+    def __init__(self, utilisateur):
         super().__init__()
-        self.geometry("600x300")
-        self.cadre_fenetre_inscription_frame = Frame(self, bg="black")
-        self.title("Création de compte")
+        self.utilisateur = utilisateur
+
+        self.geometry("800x500")
+        self.cadre_fenetre_tableau_de_bord_frame = Frame(self, bg="black")
+        self.title("La liste de vos films")
         self.resizable(False, False)
         self.config(bg="black")
+        self.creer_tableau_de_bord()
+
+    def creer_tableau_de_bord(self):
+
+        mediatheques = Mediatheque("ulflix-small.txt")
+        dicto_shows = mediatheques.charger_shows_depuis_fichier("ulflix-small.txt")
+        shows_utilisateur = []
+        list_photos = []
+        genres = mediatheques.lister_valeurs_uniques_par_attribut("categories")
+        for show_id, show in dicto_shows.items():
+            if self.utilisateur.age >= show.age_minimum_requis:
+                path_image_show = f"data\images\{show_id}.jpg"
+                show_images = Image.open(path_image_show)
+                photo = ImageTk.PhotoImage(show_images, master=self.cadre_fenetre_tableau_de_bord_frame)
+                list_photos.append(photo)
+                shows_utilisateur.append(show_id)
+
+        for i in range(len(genres)):
+            for j in range(len(list_photos)):
+                for photo in list_photos:
+                    btn_tableau_de_bord = ttk.Button(self.cadre_fenetre_tableau_de_bord_frame, image=photo)
+                    btn_tableau_de_bord.grid(row=i, column=j)
+
+        self.cadre_fenetre_tableau_de_bord_frame.grid(row=0, column=0)
+        self.cadre_fenetre_tableau_de_bord_frame.mainloop()
 
 
 if __name__ == '__main__':
