@@ -10,7 +10,6 @@ from mediatheque import Mediatheque
 from PIL import Image, ImageTk
 
 
-
 class fenetreprincipal(Tk):
     def __init__(self):
         super().__init__()
@@ -32,9 +31,11 @@ class fenetreprincipal(Tk):
 
     def appeler_fenetre_connexion(self):
         fenetre_connexion()
+        self.destroy()
 
     def appeler_fenetre_inscription(self):
         fenetre_inscription()
+        self.destroy()
 
 
 class fenetre_connexion(Tk):
@@ -82,6 +83,7 @@ class fenetre_connexion(Tk):
         except ErreurValidationException as e:
             messagebox.showerror("Erreur de validation", e, parent=self)
         else:
+            self.destroy()
             tableau_de_bord(utilisateur)
 
 
@@ -204,6 +206,7 @@ class fenetre_inscription(Tk):
         else:
             messagebox.showinfo("Bienvenue " + utilisateur.nom, "Informative message")
 
+
 class tableau_de_bord(Tk):
     def __init__(self, utilisateur):
         super().__init__()
@@ -217,27 +220,25 @@ class tableau_de_bord(Tk):
         self.creer_tableau_de_bord()
 
     def creer_tableau_de_bord(self):
-
         mediatheques = Mediatheque("ulflix-small.txt")
         dicto_shows = mediatheques.charger_shows_depuis_fichier("ulflix-small.txt")
         shows_utilisateur = []
-        list_photos = []
+        mes_boutons = {}
         genres = mediatheques.lister_valeurs_uniques_par_attribut("categories")
         for show_id, show in dicto_shows.items():
+            shows_utilisateur.append(show_id)
+
+        for i, genre in enumerate(genres):
             if self.utilisateur.age >= show.age_minimum_requis:
                 path_image_show = f"data\images\{show_id}.jpg"
                 show_images = Image.open(path_image_show)
                 photo = ImageTk.PhotoImage(show_images, master=self.cadre_fenetre_tableau_de_bord_frame)
-                list_photos.append(photo)
-                shows_utilisateur.append(show_id)
 
-        for i in range(len(genres)):
-            for j in range(len(list_photos)):
-                for photo in list_photos:
-                    btn_tableau_de_bord = ttk.Button(self.cadre_fenetre_tableau_de_bord_frame, image=photo)
-                    btn_tableau_de_bord.grid(row=i, column=j)
-
-        self.cadre_fenetre_tableau_de_bord_frame.grid(row=0, column=0)
+            for j, show_id in enumerate(shows_utilisateur):
+                btn_tableau_de_bord = ttk.Button(self.cadre_fenetre_tableau_de_bord_frame, image=photo)
+                btn_tableau_de_bord.grid(row=0, column=j)
+                mes_boutons['image'] = btn_tableau_de_bord
+        self.cadre_fenetre_tableau_de_bord_frame.grid(row=(2 * i + 1), column=0)
         self.cadre_fenetre_tableau_de_bord_frame.mainloop()
 
 
